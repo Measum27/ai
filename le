@@ -1,0 +1,1236 @@
+'''Simple Reflex Agent'''
+
+
+import random
+def drawBoard(board):
+    #This function prints out the board that is passed to it.
+    #"board" is a list of 10 strings representing the board (ignore index 0)
+    print()
+    print('   |   |')
+    print(' '+board[7]+' | ' + board[8]+' | '+board[9])
+    print('   |   |')
+    print('-----------')
+    print(' '+board[4]+' | ' + board[5]+' | '+board[6])
+    print('   |   |')
+    print('-----------')
+    print('   |   |')
+    print(' '+board[1]+' | ' + board[2]+' | '+board[3])
+    print('   |   |')
+
+
+def inputPlayerLetter():
+    #Lets the player type which letter they want to be their mark
+    #Returns a list with the player's letter as the first item, and the computer's letter as the second.
+    #For simplification, keeping X as the player's letter and O as the computer's letter
+    return['X','O']
+def whoGoesFirst():
+    #for simplification letting the computer go first
+    return 'computer'
+def playAgain():
+    #This function returns True if the player wants to play again, otherwise it returns False.
+    print('Do you want to play again? (yes or no)')
+    return input().lower().startswith('y')
+def makeMove(board,letter,move):
+    #This function simply marks the planned move (Location of the board with the player's letter.
+    board[move]=letter
+def isWinner(bo, le):
+    #Given a board and a player's letter, this function returns True if that player has won.
+    #We use bo instead of board and le instead of letter so we don't have to type as much.
+    return ((bo[7]==le and bo[8]==le and bo[9]==le) or # across the top
+            (bo[4]==le and bo[5]==le and bo[6]==le) or # across the middle
+            (bo[1]==le and bo[2]==le and bo[3]==le) or # across the bottom
+            (bo[7]==le and bo[4]==le and bo[1]==le) or #down the left side
+            (bo[8]==le and bo[5]==le and bo[2]==le) or #down the middle
+            (bo[9]==le and bo[6]==le and bo[3]==le) or #down the right side
+            (bo[7]==le and bo[5]==le and bo[3]==le) or #diagonal
+            (bo[9]==le and bo[5]==le and bo[1]==le)) #diagonal
+def getBoardCopy(board):
+    #Make a duplicate of the board list and return it the duplicate
+    dupeBoard=[]
+    for i in board:
+        dupeBoard.append(i)
+    return dupeBoard
+def isSpaceFree(board, move):
+    # Return true if the passed move is free on the passed board.
+    return board[move]==''
+def getPlayerMove(board):
+    #Let the player type in his move
+    move=''
+    while move not in '1 2 3 4 5 6 7 8 9'.split() or not isSpaceFree(board, int(move)):
+        print('What is your next move? (1-9)')
+        move=input()
+    return int(move)
+def chooseRandomMoveFromList(board, movesList):
+    #Returns a valid move from the passed list on the passed board.
+    #Returns None if there is no valid move.
+    possibleMoves=[]
+    for i in movesList:
+        if isSpaceFree(board, i):
+            possibleMoves.append(i)
+    if len(possibleMoves)!=0:
+        return random.choice(possibleMoves)
+    else:
+        return None
+def getComputerMove(board, computerLetter):
+    #Given a board and the computer's letter, determine where to move and return that move.
+    if computerLetter=='X':
+        playerLetter='O'
+    else:
+        playerLetter='X'
+
+    # Here is our algorithm for our tic toc toe AI:
+    # First, check if we can win in the next move
+    for i in range(1,10):
+        copy= getBoardCopy(board)
+        if isSpaceFree(copy,i):
+            makeMove(copy, computerLetter,i)
+            return i
+    # Check if the player could win on his next move, and block them.
+    for i in range(1,10):
+        copy=getBoardCopy(board)
+        if isSpaceFree(copy,i):
+            makeMove(copy, playerLetter, i)
+            if isWinner(copy, playerLetter):
+                return i
+    # Try to take one of the corners, if they are free
+    move = chooseRandomMoveFromList(board, [1,3,7,9])
+    if move !=None:
+        return move
+    #Try to take the center, if it is free.
+    if isSpaceFree(board,5):
+        return 5
+    # Move on one of the sides
+    return chooseRandomMoveFromList(board,[2,4,6,8])
+def isBoardFull(board):
+    # Return True if every space on the board has been taken. Otherwise returns False.
+    for i in range(1,10):
+        if isSpaceFree(board,i):
+            return False
+    return True
+
+
+
+def generateRandomMove(board):
+    #function to generate a random move
+    return random.randint(1,9)
+
+def generateRandomLetter():
+    #function to generate a random letter
+    letter = ['X','O']
+    return letter[random.randint(0,1)]
+def computerVsComputer():
+    # function for computer vs computer simulation
+    board = ['']*10
+    computer1Letter, computer2Letter = generateRandomLetter(), generateRandomLetter()
+    turn = whoGoesFirst()
+    print('The '+turn + ' will go first.')
+    gameIsPlaying = True
+    # draw all the moves
+    while gameIsPlaying:
+        if turn == 'computer1':
+            move = generateRandomMove(board)
+            makeMove(board,computer1Letter,move)
+            print('Computer 1 chooses', move)
+            drawBoard(board)
+            if isWinner(board,computer1Letter):
+                print('Computer 1 has won the game!')
+                gameIsPlaying = False
+            else:
+                if isBoardFull(board):
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer2'
+        else:
+            move = generateRandomMove(board)
+            makeMove(board,computer2Letter,move)
+            print('Computer 2 chooses', move)
+            drawBoard(board)
+            if isWinner(board,computer2Letter):
+                print('Computer 2 has won the game!')
+                gameIsPlaying = False
+            else:
+                if isBoardFull(board):
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer1'
+computerVsComputer()
+
+
+'''Lookup Table'''
+
+import random
+def drawBoard(board):
+    # This function prints out the board that is passed to it.
+    # "board" is a list of 10 strings representing the board (ignore index 0)
+    print()
+    print('   |   |')
+    print(' '+board[7]+' | ' + board[8]+' | '+board[9])
+    print('   |   |')
+    print('-----------')
+    print(' '+board[4]+' | ' + board[5]+' | '+board[6])
+    print('   |   |')
+    print('-----------')
+    print('   |   |')
+    print(' '+board[1]+' | ' + board[2]+' | '+board[3])
+    print('   |   |')
+
+
+def inputPlayerLetter():
+    # Lets the player type which letter they want to be their mark
+    # Returns a list with the player's letter as the first item, and the computer's letter as the second.
+    # For simplification, keeping X as the player's letter and O as the computer's letter
+    return ['X', 'O']
+
+
+def whoGoesFirst():
+    # for simplification letting the computer go first
+    return 'computer'
+
+
+def playAgain():
+    # This function returns True if the player wants to play again, otherwise it returns False.
+    print('Do you want to play again? (yes or no)')
+    return input().lower().startswith('y')
+
+
+def makeMove(board, letter, move):
+    # This function simply marks the planned move (Location of the board with the player's letter.
+    board[move] = letter
+
+
+def isWinner(bo, le):
+    # Given a board and a player's letter, this function returns True if that player has won.
+    # We use bo instead of board and le instead of letter so we don't have to type as much.
+    return ((bo[7] == le and bo[8] == le and bo[9] == le) or  # across the top
+            (bo[4] == le and bo[5] == le and bo[6] == le) or  # across the middle
+            (bo[1] == le and bo[2] == le and bo[3] == le) or  # across the bottom
+            (bo[7] == le and bo[4] == le and bo[1] == le) or  # down the left side
+            (bo[8] == le and bo[5] == le and bo[2] == le) or  # down the middle
+            # down the right side
+            (bo[9] == le and bo[6] == le and bo[3] == le) or
+            (bo[7] == le and bo[5] == le and bo[3] == le) or  # diagonal
+            (bo[9] == le and bo[5] == le and bo[1] == le))  # diagonal
+
+def getBoardCopy(board):
+    # Make a duplicate of the board list and return it the duplicate
+    dupeBoard = []
+    for i in board:
+        dupeBoard.append(i)
+    return dupeBoard
+
+def isSpaceFree(board, move):
+    # Return true if the passed move is free on the passed board.
+    return board[move] == ''
+
+def getPlayerMove(board):
+    # Let the player type in his move
+    move = ''
+    while move not in '1 2 3 4 5 6 7 8 9'.split() or not isSpaceFree(board, int(move)):
+        print('What is your next move? (1-9)')
+        move = input()
+    return int(move)
+
+def chooseRandomMoveFromList(board, movesList):
+    # Returns a valid move from the passed list on the passed board.
+    # Returns None if there is no valid move.
+    possibleMoves = []
+    for i in movesList:
+        if isSpaceFree(board, i):
+            possibleMoves.append(i)
+    if len(possibleMoves) != 0:
+        return random.choice(possibleMoves)
+    else:
+        return None
+
+def getComputerMove(board, computerLetter):
+    # Given a board and the computer's letter, determine where to move and return that move.
+    if computerLetter == 'X':
+        playerLetter = 'O'
+    else:
+        playerLetter = 'X'
+
+    # Here is our algorithm for our tic toc toe AI:
+    # First, check if we can win in the next move
+    for i in range(1, 10):
+        copy = getBoardCopy(board)
+        if isSpaceFree(copy, i):
+            makeMove(copy, computerLetter, i)
+            return i
+    # Check if the player could win on his next move, and block them.
+    for i in range(1, 10):
+        copy = getBoardCopy(board)
+        if isSpaceFree(copy, i):
+            makeMove(copy, playerLetter, i)
+            if isWinner(copy, playerLetter):
+                return i
+    # Try to take one of the corners, if they are free
+    move = chooseRandomMoveFromList(board, [1, 3, 7, 9])
+    if move != None:
+        return move
+    # Try to take the center, if it is free.
+    if isSpaceFree(board, 5):
+        return 5
+    # Move on one of the sides
+    return chooseRandomMoveFromList(board, [2, 4, 6, 8])
+
+
+def isBoardFull(board):
+    # Return True if every space on the board has been taken. Otherwise returns False.
+    for i in range(1, 10):
+        if isSpaceFree(board, i):
+            return False
+    return True
+
+def computerVsComputer():
+    # function for computer vs computer simulation using a lookup table approach
+    board = ['']*10
+    computer1Letter, computer2Letter = 'X', 'O'
+    turn = whoGoesFirst()
+    print('The '+turn + ' will go first.')
+    gameIsPlaying = True
+
+    # initialize the lookup table
+    qTable = {}
+
+    # draw all the moves
+    while gameIsPlaying:
+        if turn == 'computer1':
+            # get the current state
+            state = getState(board, computer1Letter, computer2Letter)
+
+            # choose a move using the lookup table
+            move = chooseMove(qTable, state)
+
+            # make the move
+            makeMove(board, computer1Letter, move)
+
+            # print the move made by computer1
+            print('Computer 1 has made a move. Board is:')
+            drawBoard(board)
+
+            # get the new state and reward
+            newState = getState(board, computer1Letter, computer2Letter)
+            reward = getReward(board, computer1Letter, computer2Letter)
+
+            # update the lookup table
+            qTable = updateTable(qTable, state, newState, move, reward)
+
+            # check for a win
+            if isWinner(board, computer1Letter):
+                drawBoard(board)
+                print('Computer 1 has won the game!')
+                gameIsPlaying = False
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer2'
+        else:
+            # get the current state
+            state = getState(board, computer2Letter, computer1Letter)
+
+            # choose a move using the lookup table
+            move = chooseMove(qTable, state)
+
+            # make the move
+            makeMove(board, computer2Letter, move)
+
+            # print the move made by computer2
+            print('Computer 2 has made a move. Board is:')
+            drawBoard(board)
+
+            # get the new state and reward
+            newState = getState(board, computer2Letter, computer1Letter)
+            reward = getReward(board, computer2Letter, computer1Letter)
+
+            # update the lookup table
+            qTable = updateTable(qTable, state, newState, move, reward)
+
+            # check for a win
+            if isWinner(board, computer2Letter):
+                drawBoard(board)
+                print('Computer 2 has won the game!')
+                gameIsPlaying = False
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer1'
+
+
+
+def updateTable(qTable, state, newState, move, reward):
+    # update the lookup table
+    if state not in qTable:
+        qTable[state] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    if newState not in qTable:
+        qTable[newState] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    qTable[state][move-1] = qTable[state][move-1] + 0.1 * (reward + 0.9 * max(qTable[newState]) - qTable[state][move-1])
+    return qTable
+
+def getState(board, computerLetter, playerLetter):
+    # get the current state
+    state = ''
+    for i in range(1, 10):
+        if board[i] == computerLetter:
+            state += '1'
+        elif board[i] == playerLetter:
+            state += '2'
+        else:
+            state += '0'
+    return state
+
+def getReward(board, computerLetter, playerLetter):
+    # get the reward
+    if isWinner(board, computerLetter):
+        reward = 1
+    elif isWinner(board, playerLetter):
+        reward = -1
+    else:
+        reward = 0
+    return reward
+
+def chooseMove(qTable, state):
+    # choose a move using the lookup table
+    if state not in qTable:
+        qTable[state] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    if random.random() < 0.1:
+        move = random.randint(1, 9)
+    else:
+        move = qTable[state].index(max(qTable[state])) + 1
+    return move
+
+computerVsComputer()
+
+def computerVsHuman():
+    # function for computer vs human simulation using a lookup table approach
+    board = ['']*10
+    computerLetter, playerLetter = 'X', 'O'
+    turn = whoGoesFirst()
+    print('The ' + turn + ' will go first.')
+
+    # initialize the lookup table
+    qTable = {}
+
+    # draw all the moves
+    while True:
+        if turn == 'computer':
+            # get the current state
+            state = getState(board, computerLetter, playerLetter)
+
+            # choose a move using the lookup table
+            move = chooseMove(qTable, state)
+
+            # make the move
+            makeMove(board, computerLetter, move)
+
+            # print the move made by computer
+            print('Computer has made a move. Board is:')
+            drawBoard(board)
+
+            # check for a win
+            if isWinner(board, computerLetter):
+                drawBoard(board)
+                print('Computer has won the game!')
+                break
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'player'
+        else:
+            # get the player's move
+            move = getPlayerMove(board)
+
+            # make the move
+            makeMove(board, playerLetter, move)
+
+            # print the move made by the player
+            print('Player has made a move. Board is:')
+            drawBoard(board)
+
+            # check for a win
+            if isWinner(board, playerLetter):
+                drawBoard(board)
+                print('Player has won the game!')
+                break
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer'
+computerVsHuman()
+
+
+'''Computer vs Human'''
+import random
+def drawBoard(board):
+    # This function prints out the board that is passed to it.
+    # "board" is a list of 10 strings representing the board (ignore index 0)
+    print()
+    print('   |   |')
+    print(' '+board[7]+' | ' + board[8]+' | '+board[9])
+    print('   |   |')
+    print('-----------')
+    print(' '+board[4]+' | ' + board[5]+' | '+board[6])
+    print('   |   |')
+    print('-----------')
+    print('   |   |')
+    print(' '+board[1]+' | ' + board[2]+' | '+board[3])
+    print('   |   |')
+
+
+def inputPlayerLetter():
+    # Lets the player type which letter they want to be their mark
+    # Returns a list with the player's letter as the first item, and the computer's letter as the second.
+    # For simplification, keeping X as the player's letter and O as the computer's letter
+    return ['X', 'O']
+
+
+def whoGoesFirst():
+    # for simplification letting the computer go first
+    return 'computer'
+
+
+def playAgain():
+    # This function returns True if the player wants to play again, otherwise it returns False.
+    print('Do you want to play again? (yes or no)')
+    return input().lower().startswith('y')
+
+
+def makeMove(board, letter, move):
+    # This function simply marks the planned move (Location of the board with the player's letter.
+    board[move] = letter
+
+
+def isWinner(bo, le):
+    # Given a board and a player's letter, this function returns True if that player has won.
+    # We use bo instead of board and le instead of letter so we don't have to type as much.
+    return ((bo[7] == le and bo[8] == le and bo[9] == le) or  # across the top
+            (bo[4] == le and bo[5] == le and bo[6] == le) or  # across the middle
+            (bo[1] == le and bo[2] == le and bo[3] == le) or  # across the bottom
+            (bo[7] == le and bo[4] == le and bo[1] == le) or  # down the left side
+            (bo[8] == le and bo[5] == le and bo[2] == le) or  # down the middle
+            # down the right side
+            (bo[9] == le and bo[6] == le and bo[3] == le) or
+            (bo[7] == le and bo[5] == le and bo[3] == le) or  # diagonal
+            (bo[9] == le and bo[5] == le and bo[1] == le))  # diagonal
+
+def getBoardCopy(board):
+    # Make a duplicate of the board list and return it the duplicate
+    dupeBoard = []
+    for i in board:
+        dupeBoard.append(i)
+    return dupeBoard
+
+def isSpaceFree(board, move):
+    # Return true if the passed move is free on the passed board.
+    return board[move] == ''
+
+def getPlayerMove(board):
+    # Let the player type in his move
+    move = ''
+    while move not in '1 2 3 4 5 6 7 8 9'.split() or not isSpaceFree(board, int(move)):
+        print('What is your next move? (1-9)')
+        move = input()
+    return int(move)
+
+def chooseRandomMoveFromList(board, movesList):
+    # Returns a valid move from the passed list on the passed board.
+    # Returns None if there is no valid move.
+    possibleMoves = []
+    for i in movesList:
+        if isSpaceFree(board, i):
+            possibleMoves.append(i)
+    if len(possibleMoves) != 0:
+        return random.choice(possibleMoves)
+    else:
+        return None
+
+def getComputerMove(board, computerLetter):
+    # Given a board and the computer's letter, determine where to move and return that move.
+    if computerLetter == 'X':
+        playerLetter = 'O'
+    else:
+        playerLetter = 'X'
+
+    # Here is our algorithm for our tic toc toe AI:
+    # First, check if we can win in the next move
+    for i in range(1, 10):
+        copy = getBoardCopy(board)
+        if isSpaceFree(copy, i):
+            makeMove(copy, computerLetter, i)
+            return i
+    # Check if the player could win on his next move, and block them.
+    for i in range(1, 10):
+        copy = getBoardCopy(board)
+        if isSpaceFree(copy, i):
+            makeMove(copy, playerLetter, i)
+            if isWinner(copy, playerLetter):
+                return i
+    # Try to take one of the corners, if they are free
+    move = chooseRandomMoveFromList(board, [1, 3, 7, 9])
+    if move != None:
+        return move
+    # Try to take the center, if it is free.
+    if isSpaceFree(board, 5):
+        return 5
+    # Move on one of the sides
+    return chooseRandomMoveFromList(board, [2, 4, 6, 8])
+
+
+def isBoardFull(board):
+    # Return True if every space on the board has been taken. Otherwise returns False.
+    for i in range(1, 10):
+        if isSpaceFree(board, i):
+            return False
+    return True
+
+def computerVsComputer():
+    # function for computer vs computer simulation using a lookup table approach
+    board = ['']*10
+    computer1Letter, computer2Letter = 'X', 'O'
+    turn = whoGoesFirst()
+    print('The '+turn + ' will go first.')
+    gameIsPlaying = True
+
+    # initialize the lookup table
+    qTable = {}
+
+    # draw all the moves
+    while gameIsPlaying:
+        if turn == 'computer1':
+            # get the current state
+            state = getState(board, computer1Letter, computer2Letter)
+
+            # choose a move using the lookup table
+            move = chooseMove(qTable, state)
+
+            # make the move
+            makeMove(board, computer1Letter, move)
+
+            # print the move made by computer1
+            print('Computer 1 has made a move. Board is:')
+            drawBoard(board)
+
+            # get the new state and reward
+            newState = getState(board, computer1Letter, computer2Letter)
+            reward = getReward(board, computer1Letter, computer2Letter)
+
+            # update the lookup table
+            qTable = updateTable(qTable, state, newState, move, reward)
+
+            # check for a win
+            if isWinner(board, computer1Letter):
+                drawBoard(board)
+                print('Computer 1 has won the game!')
+                gameIsPlaying = False
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer2'
+        else:
+            # get the current state
+            state = getState(board, computer2Letter, computer1Letter)
+
+            # choose a move using the lookup table
+            move = chooseMove(qTable, state)
+
+            # make the move
+            makeMove(board, computer2Letter, move)
+
+            # print the move made by computer2
+            print('Computer 2 has made a move. Board is:')
+            drawBoard(board)
+
+            # get the new state and reward
+            newState = getState(board, computer2Letter, computer1Letter)
+            reward = getReward(board, computer2Letter, computer1Letter)
+
+            # update the lookup table
+            qTable = updateTable(qTable, state, newState, move, reward)
+
+            # check for a win
+            if isWinner(board, computer2Letter):
+                drawBoard(board)
+                print('Computer 2 has won the game!')
+                gameIsPlaying = False
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer1'
+
+
+
+def updateTable(qTable, state, newState, move, reward):
+    # update the lookup table
+    if state not in qTable:
+        qTable[state] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    if newState not in qTable:
+        qTable[newState] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    qTable[state][move-1] = qTable[state][move-1] + 0.1 * (reward + 0.9 * max(qTable[newState]) - qTable[state][move-1])
+    return qTable
+
+def getState(board, computerLetter, playerLetter):
+    # get the current state
+    state = ''
+    for i in range(1, 10):
+        if board[i] == computerLetter:
+            state += '1'
+        elif board[i] == playerLetter:
+            state += '2'
+        else:
+            state += '0'
+    return state
+
+def getReward(board, computerLetter, playerLetter):
+    # get the reward
+    if isWinner(board, computerLetter):
+        reward = 1
+    elif isWinner(board, playerLetter):
+        reward = -1
+    else:
+        reward = 0
+    return reward
+
+def chooseMove(qTable, state):
+    # choose a move using the lookup table
+    if state not in qTable:
+        qTable[state] = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    if random.random() < 0.1:
+        move = random.randint(1, 9)
+    else:
+        move = qTable[state].index(max(qTable[state])) + 1
+    return move
+
+computerVsComputer()
+
+def computerVsHuman():
+    # function for computer vs human simulation using a lookup table approach
+    board = ['']*10
+    computerLetter, playerLetter = 'X', 'O'
+    turn = whoGoesFirst()
+    print('The ' + turn + ' will go first.')
+
+    # initialize the lookup table
+    qTable = {}
+
+    # draw all the moves
+    while True:
+        if turn == 'computer':
+            # get the current state
+            state = getState(board, computerLetter, playerLetter)
+
+            # choose a move using the lookup table
+            move = chooseMove(qTable, state)
+
+            # make the move
+            makeMove(board, computerLetter, move)
+
+            # print the move made by computer
+            print('Computer has made a move. Board is:')
+            drawBoard(board)
+
+            # check for a win
+            if isWinner(board, computerLetter):
+                drawBoard(board)
+                print('Computer has won the game!')
+                break
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'player'
+        else:
+            # get the player's move
+            move = getPlayerMove(board)
+
+            # make the move
+            makeMove(board, playerLetter, move)
+
+            # print the move made by the player
+            print('Player has made a move. Board is:')
+            drawBoard(board)
+
+            # check for a win
+            if isWinner(board, playerLetter):
+                drawBoard(board)
+                print('Player has won the game!')
+                break
+            else:
+                if isBoardFull(board):
+                    drawBoard(board)
+                    print('The game is a tie!')
+                    break
+                else:
+                    turn = 'computer'
+computerVsHuman()
+
+
+-----------------------------------------
+A STAR
+----------------------------------------
+
+import heapq
+
+def a_star_search(graph, start, goal, heuristic):
+    open_list = [(0, start)]  # Priority queue with f-score and node
+    closed_list = set()
+    g_scores = {node: float('inf') for node in graph}
+    g_scores[start] = 0
+    parents = {}
+
+    while open_list:
+        _, current_node = heapq.heappop(open_list)
+
+        if current_node == goal:
+            return reconstruct_path(parents, start, goal)
+
+        closed_list.add(current_node)
+
+        if current_node in graph:
+            for neighbor, edge_cost in graph[current_node].items():
+                if neighbor in closed_list:
+                    continue
+
+                new_g_score = g_scores[current_node] + edge_cost
+
+                if new_g_score < g_scores[neighbor] or neighbor not in [node for _, node in open_list]:
+                    g_scores[neighbor] = new_g_score
+                    parents[neighbor] = current_node
+                    f_score = new_g_score + heuristic[neighbor]
+                    heapq.heappush(open_list, (f_score, neighbor))
+
+    return None
+
+def reconstruct_path(parents, start, goal):
+    path = [goal]
+    current_node = goal
+
+    while current_node != start:
+        current_node = parents[current_node]
+        path.append(current_node)
+
+    path.reverse()
+    return path
+
+# Example usage:
+graph = {
+    'Arad': {'Zerind': 75, 'Timisoara': 118, 'Sibiu': 140},
+    'Zerind': {'Arad': 75, 'Oradea': 71},
+    'Oradea': {'Zerind': 71, 'Sibiu': 151},
+    'Timisoara': {'Arad': 118, 'Lugoj': 111},
+    'Lugoj': {'Timisoara': 111, 'Mehadia': 70},
+    'Mehadia': {'Lugoj': 70, 'Drobeta': 75},
+    'Drobeta': {'Mehadia': 75, 'Craiova': 120},
+    'Craiova': {'Drobeta': 120, 'Rimnicu': 146, 'Pitesti': 138},
+    'Rimnicu': {'Craiova': 146, 'Sibiu': 80, 'Pitesti': 97},
+    'Sibiu': {'Arad': 140, 'Oradea': 151, 'Rimnicu': 80, 'Fagaras': 99},
+    'Fagaras': {'Sibiu': 99, 'Bucharest': 211},
+    'Pitesti': {'Rimnicu': 97, 'Craiova': 138, 'Bucharest': 101},
+    'Bucharest': {'Fagaras': 211, 'Pitesti': 101, 'Giurgiu': 90, 'Urziceni': 85},
+    'Giurgiu': {'Bucharest': 77},
+    'Urziceni': {'Bucharest': 85, 'Hirsova': 98, 'Vaslui': 142},
+    'Hirsova': {'Urziceni': 98, 'Eforie': 86},
+    'Eforie': {'Hirsova': 86},
+    'Vaslui': {'Urziceni': 142, 'Iasi': 92},
+    'Iasi': {'Vaslui': 92, 'Neamt': 87},
+    'Neamt': {'Iasi': 87}
+}
+
+heuristic = {
+    'Arad': 366,
+    'Bucharest': 0,
+    'Craiova': 160,
+    'Drobeta': 242,
+    'Eforie': 161,
+    'Fagaras': 178,
+    'Giurgiu': 90,
+    'Hirsova': 151,
+    'Iasi': 226,
+    'Lugoj': 244,
+    'Mehadia': 241,
+    'Neamt': 234,
+    'Oradea': 380,
+    'Pitesti': 98,
+    'Rimnicu': 193,
+    'Sibiu': 253,
+    'Timisoara': 329,
+    'Urziceni': 80,
+    'Vaslui': 199,
+    'Zerind': 374
+}
+
+start_node = 'Arad'
+goal_node = 'Bucharest'
+
+shortest_path = a_star_search(graph, start_node, goal_node, heuristic)
+if shortest_path:
+    print("Shortest path:", shortest_path)
+else:
+    print("No path found from", start_node, "to", goal_node)
+
+
+
+
+
+
+
+
+*******************************************************************************
+DFS BFS GREEDY
+*******************************************************************************
+import heapq
+
+
+def dfs(graph, start, goal):
+    visited = set()
+    stack = [start]
+    print("Start", start)
+    while stack:
+        node = stack.pop()
+        print("Visiting", node)
+        if node == goal:
+            print("Reached Goal")
+            return True
+        if node not in visited:
+            visited.add(node)
+            stack.extend(graph[node])
+    return False
+
+
+def bfs(graph, start, goal):
+    visited = set()
+    queue = [start]
+
+    while queue:
+        node = queue.pop(0)
+
+        if node == goal:
+            print("Reached Goal")
+            return True
+
+        if node not in visited:
+            visited.add(node)
+            if node in graph:
+                queue.extend(graph[node])
+
+    return False
+
+
+def greedy_search(graph, start, goal, heuristic):
+    visited = set()
+    # Priority queue using heuristic value as priority
+    queue = [(heuristic[start], start)]
+    print("Start", start)
+    while queue:
+        _, node = heapq.heappop(queue)
+        print("Visiting", node)
+        if node == goal:
+            print("Reached Goal", visited)
+            return True
+
+        if node not in visited:
+            visited.add(node)
+
+            if node in graph:  # Check if node exists in the graph dictionary
+                for neighbor in graph[node]:
+                    if neighbor not in visited:
+                        heapq.heappush(queue, (heuristic[neighbor], neighbor))
+
+    return False
+
+
+graph = {
+    "A": ["B", "D"],
+    "B": ["C", "E"],
+    "C": [],
+    "D": ["E", "G"],
+    "E": ["C", "F"],
+    "F": [],
+    "G": []
+}
+
+heuristic = {
+    "A": 5,
+    "B": 4,
+    "C": 2,
+    "D": 3,
+    "E": 2,
+    "F": 1,
+    "G": 0
+}
+
+print(greedy_search(graph, "A", "G", heuristic))
+# print(dfs(graph, "A", "G"))
+
+
+
+
+*******************************************************************************
+EVOLTUION Algo
+*******************************************************************************
+
+import random
+
+# Problem-specific evaluation function
+def evaluate_solution(solution):
+    # Calculate fitness or objective value of the solution
+    # Return the fitness value
+    return sum(solution)
+
+# Evolutionary Algorithm
+def evolutionary_algorithm(population_size, num_generations):
+    # Generate an initial population of random solutions
+    population = [random.choices([0, 1], k=10) for _ in range(population_size)]
+
+    for generation in range(num_generations):
+        # Evaluate fitness of each solution in the population
+        fitness_values = [evaluate_solution(solution) for solution in population]
+
+        # Select parents for reproduction (e.g., tournament selection)
+        parents = random.choices(population, weights=fitness_values, k=population_size)
+
+        # Create offspring through crossover (e.g., one-point crossover)
+        offspring = []
+        for i in range(population_size):
+            parent1 = random.choice(parents)
+            parent2 = random.choice(parents)
+            crossover_point = random.randint(0, len(parent1))
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+            offspring.append(child)
+
+        # Apply mutation to the offspring (e.g., bit-flip mutation)
+        for i in range(population_size):
+            for j in range(len(offspring[i])):
+                if random.random() < mutation_rate:
+                    offspring[i][j] = 1 - offspring[i][j]
+
+        # Replace the current population with the offspring
+        population = offspring
+
+    # Return the best solution found
+    best_solution = max(population, key=lambda x: evaluate_solution(x))
+    return best_solution
+
+# Example usage
+population_size = 1000
+num_generations = 50
+mutation_rate = 0.01
+
+best_solution = evolutionary_algorithm(population_size, num_generations)
+print("Best solution:", best_solution)
+print("Fitness:", evaluate_solution(best_solution))
+
+
+
+*******************************************************************************
+Genetic Algo
+*******************************************************************************
+#GENETIC ALGO SIMPLEST
+import random
+
+# Genetic Algorithm Parameters
+population_size = 50
+chromosome_length = 10
+generations = 100
+
+# Generate Initial Population
+population = []
+for _ in range(population_size):
+    lst = []
+    for _ in range(chromosome_length):
+        lst.append(random.randint(0,1))
+    population.append(lst)
+
+# Fitness Function (Modify according to your problem)
+def fitness_function(chromosome):
+    target = [1, 1, 0, 1, 0, 0, 1, 0, 1, 0]  # Example target chromosome
+    return sum(c1 == c2 for c1, c2 in zip(chromosome, target))
+
+# Genetic Algorithm
+for _ in range(generations):
+    population = sorted(population, key=fitness_function, reverse=True)
+    parents = population[:population_size // 2]
+
+    new_population = []
+    for parent1, parent2 in zip(parents[::2], parents[1::2]):
+
+        crossover_point = 4
+        child1 = parent1[:crossover_point] + parent2[crossover_point:]
+        child2 = parent2[:crossover_point] + parent1[crossover_point:]
+        mutated_child1 = child1[:3] + [1-child1[3]] + child1[4:]
+        mutated_child2 = child2[:3] + [1-child2[3]] + child2[4:]
+        new_population.extend([mutated_child1, mutated_child2])
+
+    population = new_population
+
+# Find the best chromosome in the final population
+best_solution = max(population, key=fitness_function)
+
+print("Best Solution:", best_solution)
+print("Fitness:", fitness_function(best_solution))
+
+*******************************************************************************
+Particle Swarm Optimization
+*******************************************************************************
+#Particle Swarm Optimization WITH ERROR
+import random
+
+# Particle Swarm Optimization Parameters
+num_particles = 50
+num_dimensions = 10
+max_iterations = 100
+c1 = 2.0  # Cognitive parameter
+c2 = 2.0  # Social parameter
+w = 0.7   # Inertia weight
+
+# Initialize Particle Positions, Velocities, and Best Positions
+particles = [[random.uniform(0, 1) for _ in range(num_dimensions)] for _ in range(num_particles)]
+velocities = [[random.uniform(-1, 1) for _ in range(num_dimensions)] for _ in range(num_particles)]
+best_positions = particles.copy()
+
+# Fitness Function (Modify according to your problem)
+def fitness_function(position):
+    target = [1, 1, 0, 1, 0, 0, 1, 0, 1, 0]  # Example target position
+    return sum(c1 == c2 for c1, c2 in zip(position, target))
+
+# Particle Swarm Optimization
+global_best_position = None
+global_best_fitness = float('-inf')
+
+for _ in range(max_iterations):
+    for i in range(num_particles):
+        particle = particles[i]
+        velocity = velocities[i]
+        best_position = best_positions[i]
+
+        # Update Particle Velocity
+        for j in range(num_dimensions):
+            r1 = random.uniform(0, 1)
+            r2 = random.uniform(0, 1)
+            velocity[j] = (w * velocity[j]) + (c1 * r1 * (best_position[j] - particle[j])) + (c2 * r2 * (global_best_position[j] - particle[j]))
+
+        # Update Particle Position
+        for j in range(num_dimensions):
+            particle[j] = particle[j] + velocity[j]
+
+        # Update Best Positions
+        fitness = fitness_function(particle)
+        if fitness > fitness_function(best_position):
+            best_positions[i] = particle
+
+        # Update Global Best
+        if fitness > global_best_fitness:
+            global_best_fitness = fitness
+            global_best_position = particle
+
+# Print the Best Solution and its Fitness
+print("Best Solution:", global_best_position)
+print("Fitness:", global_best_fitness)
+
+******************************************************************************
+Ant Colony Optimiazation
+*****************************************************************************
+import random
+
+# Ant Colony Optimization Parameters
+num_ants = 50
+num_iterations = 100
+alpha = 1.0  # Pheromone factor
+beta = 2.0   # Heuristic factor
+evaporation_rate = 0.5
+
+# Graph representation (Modify according to your problem)
+graph = [
+    [0, 2, 4, 1],
+    [2, 0, 1, 5],
+    [4, 1, 0, 3],
+    [1, 5, 3, 0]
+]
+
+num_cities = len(graph)
+
+# Initialize Pheromone Matrix
+pheromone = [[1.0 for _ in range(num_cities)] for _ in range(num_cities)]
+
+# Ant Colony Optimization
+best_path = None
+best_distance = float('inf')
+
+for _ in range(num_iterations):
+    paths = []
+
+    # Construct Solutions
+    for _ in range(num_ants):
+        start_city = random.randint(0, num_cities - 1)
+        path = [start_city]
+        visited = [False] * num_cities
+        visited[start_city] = True
+
+        for _ in range(num_cities - 1):
+            current_city = path[-1]
+            next_city = None
+            probabilities = []
+
+            # Compute Probabilities for the Next City
+            for city in range(num_cities):
+                if not visited[city]:
+                    pheromone_value = pheromone[current_city][city]
+                    heuristic_value = 1.0 / graph[current_city][city]
+                    probability = pheromone_value * alpha * heuristic_value * beta
+                    probabilities.append((city, probability))
+
+            total_probability = sum(prob for _, prob in probabilities)
+            probabilities = [(city, prob / total_probability) for city, prob in probabilities]
+
+            # Choose Next City based on Probability
+            random_value = random.uniform(0, 1)
+            cumulative_probability = 0.0
+            for city, probability in probabilities:
+                cumulative_probability += probability
+                if random_value <= cumulative_probability:
+                    next_city = city
+                    break
+
+            path.append(next_city)
+            visited[next_city] = True
+
+        paths.append(path)
+
+    # Update Pheromone Matrix
+    for i in range(num_cities):
+        for j in range(num_cities):
+            if i != j:
+                pheromone[i][j] *= (1 - evaporation_rate)
+
+    for path in paths:
+        distance = sum(graph[path[i]][path[i+1]] for i in range(num_cities - 1))
+        if distance < best_distance:
+            best_distance = distance
+            best_path = path
+
+        for i in range(num_cities - 1):
+            pheromone[path[i]][path[i+1]] += 1.0 / distance
+
+# Print the Best Path and its Distance
+print("Best Path:", best_path)
+print("Distance:", best_distance)

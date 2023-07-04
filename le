@@ -1,4 +1,3 @@
-'''Simple Reflex Agent'''
 
 
 import random
@@ -1234,3 +1233,513 @@ for _ in range(num_iterations):
 # Print the Best Path and its Distance
 print("Best Path:", best_path)
 print("Distance:", best_distance)
+**************TIC TAC TOE wiht minimax*******************
+
+import random
+
+def print_board(board):
+    """
+    Prints the Tic-Tac-Toe board.
+    """
+    print("---------")
+    for row in board:
+        print("|", end="")
+        for cell in row:
+            print(cell, end="|")
+        print("\n---------")
+
+def is_full(board):
+    """
+    Checks if the board is full.
+    """
+    for row in board:
+        for cell in row:
+            if cell == "-":
+                return False
+    return True
+
+def get_winner(board):
+    """
+    Determines the winner of the game.
+    Returns 'X' if X wins, 'O' if O wins, or '-' if there is no winner yet.
+    """
+    # Check rows
+    for row in board:
+        if row[0] == row[1] == row[2] != "-":
+            return row[0]
+
+    # Check columns
+    for col in range(3):
+        if board[0][col] == board[1][col] == board[2][col] != "-":
+            return board[0][col]
+
+    # Check diagonals
+    if board[0][0] == board[1][1] == board[2][2] != "-":
+        return board[0][0]
+    if board[0][2] == board[1][1] == board[2][0] != "-":
+        return board[0][2]
+
+    return "-"
+
+def get_empty_cells(board):
+    """
+    Returns a list of empty cells on the board.
+    """
+    empty_cells = []
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == "-":
+                empty_cells.append((i, j))
+    return empty_cells
+
+def evaluate(board):
+    """
+    Evaluates the current state of the board.
+    Returns +1 if X wins, -1 if O wins, or 0 for a tie.
+    """
+    winner = get_winner(board)
+    if winner == "X":
+        return 1
+    elif winner == "O":
+        return -1
+    else:
+        return 0
+
+def minimax(board, depth, is_maximizing):
+    """
+    Minimax algorithm implementation.
+    """
+    if get_winner(board) != "-":
+        return evaluate(board)
+
+    if is_full(board):
+        return 0
+
+    if is_maximizing:
+        best_score = float("-inf")
+        for cell in get_empty_cells(board):
+            i, j = cell
+            board[i][j] = "X"
+            score = minimax(board, depth + 1, False)
+            board[i][j] = "-"
+            best_score = max(score, best_score)
+        return best_score
+
+    else:
+        best_score = float("inf")
+        for cell in get_empty_cells(board):
+            i, j = cell
+            board[i][j] = "O"
+            score = minimax(board, depth + 1, True)
+            board[i][j] = "-"
+            best_score = min(score, best_score)
+        return best_score
+
+def get_best_move(board):
+    """
+    Finds the best move for the AI using the Minimax algorithm.
+    """
+    best_score = float("-inf")
+    best_move = None
+    for cell in get_empty_cells(board):
+        i, j = cell
+        board[i][j] = "X"
+        score = minimax(board, 0, False)
+        board[i][j] = "-"
+        if score > best_score:
+            best_score = score
+            best_move = cell
+    return best_move
+
+def play_game():
+    """
+    Plays a simplified Tic-Tac-Toe game against the AI.
+    """
+    board = [["-" for _ in range(3)] for _ in range(3)]
+    print("Welcome to Simplified Tic-Tac-Toe!")
+    print_board(board)
+
+    while True:
+        # Player's turn
+        position = int(input("Enter the position on the board (1-9): "))
+        row = (position - 1) // 3
+        col = (position - 1) % 3
+        if board[row][col] == "-":
+            board[row][col] = "O"
+        else:
+            print("Invalid move! Try again.")
+            continue
+
+        # Check for game over
+        winner = get_winner(board)
+        if winner == "O":
+            print("Congratulations! You won!")
+            break
+        elif is_full(board):
+            print("It's a tie!")
+            break
+
+        # AI's turn
+        print("AI is thinking...")
+        ai_move = get_best_move(board)
+        board[ai_move[0]][ai_move[1]] = "X"
+
+        # Check for game over
+        winner = get_winner(board)
+        if winner == "X":
+            print("AI wins!")
+            break
+        elif is_full(board):
+            print("It's a tie!")
+            break
+
+        print_board(board)
+
+play_game()
+
+
+
+***************************************************************
+NAIVE BIAS
+***************************************************************
+
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix
+
+url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/dermatology/dermatology.data'
+column_names = ['erythema', 'scaling', 'definite borders', 'itching', 'koebner phenomenon',
+                'polygonal papules', 'follicular papules', 'oral mucosal involvement', 'knee and elbow involvement',
+                'scalp involvement', 'family history', 'melanin incontinence', 'eosinophils in the infiltrate',
+                'PNL infiltrate', 'fibrosis of the papillary dermis', 'exocytosis', 'acanthosis',
+                'hyperkeratosis', 'parakeratosis', 'clubbing of the rete ridges', 'elongation of the rete ridges',
+                'thinning of the suprapapillary epidermis', 'spongiform pustule', 'munro microabcess',
+                'focal hypergranulosis', 'disappearance of the granular layer', 'vacuolisation and damage of basal layer',
+                'spongiosis', 'saw-tooth appearance of retes', 'follicular horn plug', 'perifollicular parakeratosis',
+                'inflammatory monoluclear inflitrate', 'band-like infiltrate', 'age', 'class']
+df = pd.read_csv(url, names=column_names)
+df.replace('?', pd.NA, inplace=True)
+df.fillna(df.mode().iloc[0], inplace=True)
+
+X = df.iloc[:, :-1]
+y = df.iloc[:, -1]
+print(X)
+print(y)
+
+split_percentages = [(0.6, 0.4), (0.7, 0.3), (0.8, 0.2)]
+
+for split in split_percentages:
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split[1], random_state=42)
+
+    nb_classifier = GaussianNB()
+    nb_classifier.fit(X_train, y_train)
+
+    k = 5
+    cross_val_scores = cross_val_score(nb_classifier, X_train, y_train, cv=k)
+
+    print(f"Train/Test Split: {split[0] * 100}% / {split[1] * 100}%")
+    print(f"Mean Accuracy (Cross-validation): {cross_val_scores.mean():.4f}")
+    print()
+
+    y_pred = nb_classifier.predict(X_test)
+
+    cm = confusion_matrix(y_test, y_pred)
+    print("Confusion Matrix:")
+    print(cm)
+    print()
+
+    accuracy = (cm.diagonal().sum() / cm.sum()) * 100
+    precision = cm[1][1] / (cm[1][1] + cm[0][1])
+    recall = cm[1][1] / (cm[1][1] + cm[1][0])
+
+    print(f"Accuracy: {accuracy:.2f}%")
+    print(f"Precision: {precision:.2f}")
+    print(f"Recall: {recall:.2f}")
+    print("--------------------------------------------")
+
+
+
+***************************************************
+A*STARR
+***************************************************
+
+
+import heapq
+
+def a_star_search(graph, start, goal, heuristic):
+    open_list = [(0, start)]  # Priority queue with f-score and node
+    closed_list = set()
+    g_scores = {node: float('inf') for node in graph}
+    g_scores[start] = 0
+    parents = {}
+
+    while open_list:
+        _, current_node = heapq.heappop(open_list)
+
+        if current_node == goal:
+            return reconstruct_path(parents, start, goal)
+
+        closed_list.add(current_node)
+
+        if current_node in graph:
+            for neighbor, edge_cost in graph[current_node].items():
+                if neighbor in closed_list:
+                    continue
+
+                new_g_score = g_scores[current_node] + edge_cost
+
+                if new_g_score < g_scores[neighbor] or neighbor not in [node for _, node in open_list]:
+                    g_scores[neighbor] = new_g_score
+                    parents[neighbor] = current_node
+                    f_score = new_g_score + heuristic[neighbor]
+                    heapq.heappush(open_list, (f_score, neighbor))
+
+    return None
+
+def reconstruct_path(parents, start, goal):
+    path = [goal]
+    current_node = goal
+
+    while current_node != start:
+        current_node = parents[current_node]
+        path.append(current_node)
+
+    path.reverse()
+    return path
+
+# Example usage:
+graph = {
+    'Arad': {'Zerind': 75, 'Timisoara': 118, 'Sibiu': 140},
+    'Zerind': {'Arad': 75, 'Oradea': 71},
+    'Oradea': {'Zerind': 71, 'Sibiu': 151},
+    'Timisoara': {'Arad': 118, 'Lugoj': 111},
+    'Lugoj': {'Timisoara': 111, 'Mehadia': 70},
+    'Mehadia': {'Lugoj': 70, 'Drobeta': 75},
+    'Drobeta': {'Mehadia': 75, 'Craiova': 120},
+    'Craiova': {'Drobeta': 120, 'Rimnicu': 146, 'Pitesti': 138},
+    'Rimnicu': {'Craiova': 146, 'Sibiu': 80, 'Pitesti': 97},
+    'Sibiu': {'Arad': 140, 'Oradea': 151, 'Rimnicu': 80, 'Fagaras': 99},
+    'Fagaras': {'Sibiu': 99, 'Bucharest': 211},
+    'Pitesti': {'Rimnicu': 97, 'Craiova': 138, 'Bucharest': 101},
+    'Bucharest': {'Fagaras': 211, 'Pitesti': 101, 'Giurgiu': 90, 'Urziceni': 85},
+    'Giurgiu': {'Bucharest': 77},
+    'Urziceni': {'Bucharest': 85, 'Hirsova': 98, 'Vaslui': 142},
+    'Hirsova': {'Urziceni': 98, 'Eforie': 86},
+    'Eforie': {'Hirsova': 86},
+    'Vaslui': {'Urziceni': 142, 'Iasi': 92},
+    'Iasi': {'Vaslui': 92, 'Neamt': 87},
+    'Neamt': {'Iasi': 87}
+}
+
+heuristic = {
+    'Arad': 366,
+    'Bucharest': 0,
+    'Craiova': 160,
+    'Drobeta': 242,
+    'Eforie': 161,
+    'Fagaras': 178,
+    'Giurgiu': 90,
+    'Hirsova': 151,
+    'Iasi': 226,
+    'Lugoj': 244,
+    'Mehadia': 241,
+    'Neamt': 234,
+    'Oradea': 380,
+    'Pitesti': 98,
+    'Rimnicu': 193,
+    'Sibiu': 253,
+    'Timisoara': 329,
+    'Urziceni': 80,
+    'Vaslui': 199,
+    'Zerind': 374
+}
+
+start_node = 'Arad'
+goal_node = 'Bucharest'
+
+shortest_path = a_star_search(graph, start_node, goal_node, heuristic)
+if shortest_path:
+    print("Shortest path:", shortest_path)
+else:
+    print("No path found from", start_node, "to", goal_node)
+
+
+**************************************************
+GENETIC ALGORITHM
+**************************************************
+
+import numpy as np
+
+def fitness_function(x):
+    # Replace this function with your own fitness function
+    return x**2
+
+def initialize_population(pop_size, num_variables):
+    return np.random.rand(pop_size, num_variables)
+
+def selection(population, fitness_values):
+    # Perform tournament selection
+    idx = np.random.choice(len(population), size=len(population), replace=True)
+    selected = population[idx]
+    selected_fitness = fitness_values[idx]
+    return selected, selected_fitness
+
+def crossover(parent1, parent2):
+    # Perform single-point crossover
+    crossover_point = np.random.randint(1, len(parent1))
+    child1 = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
+    child2 = np.concatenate((parent2[:crossover_point], parent1[crossover_point:]))
+    return child1, child2
+
+def mutation(individual, mutation_rate):
+    # Perform bit-flip mutation
+    mutated_individual = individual.copy()
+    for i in range(len(mutated_individual)):
+        if np.random.rand() < mutation_rate:
+            mutated_individual[i] = 1 - mutated_individual[i]
+    return mutated_individual
+
+def genetic_algorithm(pop_size, num_generations, mutation_rate):
+    num_variables = 10  # Change this value according to your problem's dimensions
+    population = initialize_population(pop_size, num_variables)
+
+    for generation in range(num_generations):
+        fitness_values = np.array([fitness_function(individual) for individual in population])
+        best_index = np.argmax(fitness_values)
+        best_solution = population[best_index]
+        print(f"Generation {generation+1}, Best Fitness: {fitness_function(best_solution)}")
+
+        selected, selected_fitness = selection(population, fitness_values)
+        new_population = []
+
+        for i in range(0, pop_size, 2):
+            parent1, parent2 = selected[i], selected[i + 1]
+            child1, child2 = crossover(parent1, parent2)
+            child1 = mutation(child1, mutation_rate)
+            child2 = mutation(child2, mutation_rate)
+            new_population.append(child1)
+            new_population.append(child2)
+
+        population = np.array(new_population)
+
+    return best_solution
+
+if _name_ == "_main_":
+    pop_size = 100
+    num_generations = 50
+    mutation_rate = 0.01
+
+    best_solution = genetic_algorithm(pop_size, num_generations, mutation_rate)
+    print("Best Solution:", best_solution)
+    print("Best Fitness:", fitness_function(best_solution))
+
+
+
+************************************************
+HILL CLIMBING
+************************************************
+
+import random
+
+def objective_function(x, y):
+    """
+    Objective function to evaluate the state.
+    """
+    return (1 - x)*2 + 100(y - x*2)*2
+
+def generate_neighbor(x, y):
+    """
+    Generates a random neighbor state by making a small change to the current state.
+    """
+    neighbor_x = x + random.uniform(-0.1, 0.1)
+    neighbor_y = y + random.uniform(-0.1, 0.1)
+    return neighbor_x, neighbor_y
+
+def hill_climbing(initial_x, initial_y):
+    """
+    Hill Climbing algorithm implementation.
+    """
+    current_x = initial_x
+    current_y = initial_y
+    current_score = objective_function(current_x, current_y)
+
+    while True:
+        neighbor_x, neighbor_y = generate_neighbor(current_x, current_y)
+        neighbor_score = objective_function(neighbor_x, neighbor_y)
+
+        if neighbor_score < current_score:
+            current_x = neighbor_x
+            current_y = neighbor_y
+            current_score = neighbor_score
+        else:
+            break
+
+    return current_x, current_y, current_score
+
+# Example usage
+initial_x = random.uniform(-2, 2)
+initial_y = random.uniform(-2, 2)
+final_x, final_y, final_score = hill_climbing(initial_x, initial_y)
+print("Final State (x, y):", final_x, final_y)
+print("Final Score:", final_score)
+
+
+
+
+************************************************
+LINEAR REGRESSION
+************************************************
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error,mean_squared_error
+
+df = pd.read_excel("weather.xlsx")
+# print(df.head(5))
+
+y = df["Basel Temperature [2 m elevation corrected]"].values.reshape(-1,1) # column vector conversion
+x = df["Basel Growing Degree Days [2 m elevation corrected]"].values.reshape(-1,1)
+
+print(x.shape)
+print(y.shape)
+
+plt.scatter(x[::1000],y[::1000])
+plt.title('Basel Temp vs Basel Growing Degree Days ')
+plt.xlabel("Basel Growing Degree Days")
+plt.ylabel("Basel Temp")
+plt.show()
+
+x = x[~np.isnan(x).any(axis=1)]
+y = y[~np.isnan(y).any(axis=1)]
+
+print(x.shape)
+print(y.shape)
+
+xTrain , xTest , yTrain , yTest = train_test_split(x,y,test_size=0.2,random_state = 0)
+
+lReg = LinearRegression()
+lReg.fit(xTrain,yTrain)
+
+yPrediction = lReg.predict(X=xTest)
+
+yPrediction = pd.DataFrame ({"Actual": yTest.flatten(), "Predict":yPrediction.flatten()})
+print(yPrediction.head(5))
+
+
+plt.scatter(xTrain[::1000] , yTrain[::1000] , color = "red")
+plt.plot(xTrain[::500] , lReg.predict(xTrain)[::500], color = "blue")
+plt.title('Basel Temp vs Basel Growing Degree Days ')
+plt.xlabel("Basel Growing Degree Days")
+plt.ylabel("Basel Temp")
+plt.show()
+
+
+print("Mean Absolute Error:", mean_absolute_error(xTrain ,yTrain))
+print("Mean Squared Error:",mean_squared_error(xTrain ,yTrain))
+print("Root Mean Squared Error:", np.sqrt(mean_squared_error(xTrain ,yTrain)))
+
